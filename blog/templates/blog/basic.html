@@ -1,0 +1,324 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- ✅ Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+    <title>{% block title%} {% endblock %}</title>
+    <style>
+      {% block css %}
+
+
+      {% endblock %}0
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* Fix navbar right side stability */
+  .navbar .d-flex form {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Lock cart button in place */
+  #abcd {
+    margin-left: 6px !important;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* Fix search input width */
+  .navbar input.form-control {
+    width: 160px !important;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   </style>
+  </head>
+  <body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="/shop">My Awesome Cart</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/shop/index">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/shop/about">About Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/shop/tracker">Tracker</a>
+          </li>
+
+            <li class="nav-item">
+            <a class="nav-link" href="/blog" >Blog</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/shop/contact">Contact Us</a>
+          </li>
+        </ul>
+
+
+      </div>
+
+
+
+<div class="d-flex align-items-center ms-auto" style="gap: 8px;">
+
+  <form method="get" action="/shop/search/"
+        class="d-flex align-items-center m-0 p-0">
+    <input name="search"
+           class="form-control"
+           style="width: 160px; margin-right: 6px;"
+           placeholder="Search"
+           aria-label="Search">
+    <button class="btn btn-outline-success"
+            type="submit">Search</button>
+  </form>
+
+  <button type="button"
+          id="abcd"
+          class="btn btn-primary flex-shrink-0"
+          style="white-space: nowrap; margin-left: 6px;"
+          data-bs-toggle="popover"
+          data-bs-html="true"
+          data-bs-placement="bottom"
+          title="Shopping Cart"
+          data-bs-content='
+            <div class="text-center">
+              <p class="mb-2">Cart Total: <strong>$99</strong></p>
+              <div class="d-flex gap-2 justify-content-center">
+                <a href="{% url "clear_cart" %}" class="btn btn-danger btn-sm">Clear Cart</a>
+                <a href="{% url "checkout" %}" class="btn btn-success btn-sm">Checkout</a>
+              </div>
+            </div>'>
+    Cart (<span id="cart"></span>)
+  </button>
+
+</div>
+
+
+
+
+
+
+
+
+
+    </nav>
+
+
+
+    {% block body %} {% endblock %}
+
+    <!-- ✅ jQuery (kept as you had it) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+<!-- Replace your broken script tag with this -->
+
+
+
+
+    <!-- ✅ Bootstrap 5 JS Bundle (includes Popper — no separate Popper needed) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"  crossorigin="anonymous"></script>
+
+    <!-- ✅ Bootstrap 5 requires manual popover initialization -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.forEach(function (el) {
+          new bootstrap.Popover(el);
+        });
+      });
+
+
+
+// ── Cart Initialize ──────────────────────────────────────────────────────────
+var cart = {};
+
+if (localStorage.getItem('cart') !== null) {
+    try {
+        cart = JSON.parse(localStorage.getItem('cart'));
+        // Validate cart structure — wipe if corrupted
+        for (var key in cart) {
+            if (
+                !Array.isArray(cart[key]) ||
+                cart[key].length < 3 ||
+                typeof cart[key][0] !== 'number'
+            ) {
+                console.warn('Corrupted cart found, clearing localStorage');
+                localStorage.clear();
+                cart = {};
+                break;
+            }
+        }
+    } catch(e) {
+        localStorage.clear();
+        cart = {};
+    }
+}
+
+
+
+
+
+// ── Update Cart Display ──────────────────────────────────────────────────────
+function updateCartDisplay(cart) {
+
+    var sum = 0;
+
+    for (var item in cart) {
+
+        var qty  = cart[item][0];   // number
+        var name = cart[item][1];   // string
+   var itemPrice = parseFloat(cart[item][2]);
+        sum += qty;
+
+        var a     = item.slice(2);  // strips 'pr' → gives product_id number
+        var divEl = document.getElementById('divpr' + a);
+
+        if (divEl) {
+            divEl.innerHTML =
+                "<button id='minuspr" + a + "' class='btn btn-sm btn-danger minus'>-</button>" +
+                " <span id='valpr"   + a + "'>" + qty + "</span> " +
+                "<button id='pluspr" + a + "' class='btn btn-sm btn-success plus'>+</button>";
+        }
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+
+    var cartEl = document.getElementById('cart');
+    if (cartEl) {
+        cartEl.innerHTML = sum;
+    }
+}
+
+
+// ── Update Popover ───────────────────────────────────────────────────────────
+function updatePopover(cart) {
+
+    var popStr =
+        "<h5>Items in your shopping cart</h5>" +
+        "<div class='mx-2 my-2'>";
+
+    var i = 1;
+
+    for (var item in cart) {
+
+        var qty      = cart[item][0];
+        var name     = cart[item][1];
+
+        var nameEl   = document.getElementById('name' + item);
+        var itemName = nameEl ? nameEl.innerHTML.trim().slice(0, 19) : name;
+
+        popStr += "<b>" + i + "</b>. " + itemName + "... Qty: " + qty + "<br>";
+        i++;
+    }
+
+    popStr +=
+        "</div>" +
+        "<a href='/shop/checkout'>" +
+        "<button class='btn btn-primary btn-sm' id='checkout'>Checkout</button></a> " +
+        "<button class='btn btn-danger btn-sm' onclick='clearCart()' id='clearCart'>Clear Cart</button>";
+
+    var el = document.getElementById('popcart');
+
+    if (el) {
+        el.setAttribute('data-bs-content', popStr);
+
+        var existingPopover = bootstrap.Popover.getInstance(el);
+        if (existingPopover) {
+            existingPopover.setContent({ '.popover-body': popStr });
+        }
+    }
+}
+
+
+// ── Add To Cart ──────────────────────────────────────────────────────────────
+$(document).on('click', '.divpr button.cart', function () {
+
+    var idstr = this.id.toString();  // e.g. 'pr14'
+
+    if (cart[idstr] != undefined) {
+        // Increment only [0] (qty), keep [1] (name) intact
+        cart[idstr][0] = cart[idstr][0] + 1;
+    } else {
+        // Get actual product name from DOM for new cart entry
+        var nameEl   = document.getElementById('name' + idstr);
+        var itemName = nameEl ? nameEl.innerHTML.trim() : idstr;
+             var price    = parseFloat($(this).data('price'));
+
+           cart[idstr]  = [1, itemName, price];
+
+    }
+
+    updateCartDisplay(cart);
+    updatePopover(cart);
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+updateCartDisplay(cart);
+updatePopover(cart);
+
+
+
+    </script>
+
+    {% block js %} {% endblock %}
+  </body>
+</html>

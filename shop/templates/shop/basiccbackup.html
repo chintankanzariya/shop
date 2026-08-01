@@ -1,0 +1,177 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- ✅ Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+    <title>{% block title%} {% endblock %}</title>
+    <style>
+      {% block css %}
+
+
+  /* Fix navbar right side stability */
+  .navbar .d-flex form {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Lock cart button in place */
+  #abcd {
+    margin-left: 6px !important;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* Fix search input width */
+  .navbar input.form-control {
+    width: 160px !important;
+  }
+
+
+      {% endblock %}
+    </style>
+  </head>
+  <body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="/shop">My Awesome Cart</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/shop/index">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/shop/about">About Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/shop/tracker">Tracker</a>
+          </li>
+
+            <li class="nav-item">
+            <a class="nav-link" href="/blog" >Blog</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/shop/contact">Contact Us</a>
+          </li>
+        </ul>
+
+
+      </div>
+<!--<div class="d-flex align-items-center ms-auto gap-2">-->
+
+<!--      <form method="get" action="/shop/search/" class="form-inline my-2 my-lg-0">-->
+<!--          <input name="search"  class="form-control mr-sm-2"  placeholder="Search" aria-label="Search">-->
+<!--          <button class="btn btn-outline-success  my-sm-0"  id="search"  type="submit">Search</button>-->
+<!--        </form>-->
+
+
+
+
+
+
+<!--        <button type="button" id="abcd"-->
+<!--                class="btn btn-primary  my-2 my-lg-0"-->
+<!--                data-bs-toggle="popover"-->
+<!--                data-bs-html="true"-->
+<!--                title="Shopping Cart"-->
+<!--                data-bs-content='-->
+<!--                    <div class="text-center">-->
+<!--                        <p class="mb-2">-->
+
+<!--      Cart Total: <strong>$99</strong>-->
+<!--                        </p>-->
+<!--                        <div class="d-flex gap-2 justify-content-center">-->
+<!--                            <a href="{% url "clear_cart" %}"-->
+<!--                               class="btn btn-danger btn-sm">-->
+<!--                                Clear Cart-->
+<!--                            </a>-->
+<!--                            <a href="{% url "checkout" %}"-->
+<!--                               class="btn btn-success btn-sm">-->
+<!--                                Checkout-->
+<!--                            </a>-->
+<!--                        </div>-->
+<!--                    </div>'>-->
+<!--          Cart(<span id="cart">0</span>)-->
+<!--        </button>-->
+
+
+<!--</div>-->
+
+
+<div class="d-flex align-items-center ms-auto" style="gap: 8px;">
+
+  <form method="get" action="/shop/search/"
+        class="d-flex align-items-center m-0 p-0">
+    <input name="search"
+           class="form-control"
+           style="width: 160px; margin-right: 6px;"
+           placeholder="Search"
+           aria-label="Search">
+    <button class="btn btn-outline-success"
+            type="submit">Search</button>
+  </form>
+
+  <button type="button"
+          id="abcd"
+          class="btn btn-primary flex-shrink-0"
+          style="white-space: nowrap; margin-left: 6px;"
+          data-bs-toggle="popover"
+          data-bs-html="true"
+          data-bs-placement="bottom"
+          title="Shopping Cart"
+          data-bs-content='
+            <div class="text-center">
+              <p class="mb-2">Cart Total: <strong>$99</strong></p>
+              <div class="d-flex gap-2 justify-content-center">
+                <a href="{% url "clear_cart" %}" class="btn btn-danger btn-sm">Clear Cart</a>
+                <a href="{% url "checkout" %}" class="btn btn-success btn-sm">Checkout</a>
+              </div>
+            </div>'>
+    Cart (<span id="cart"></span>)
+  </button>
+
+</div>
+
+
+
+
+
+
+
+
+
+    </nav>
+
+
+
+    {% block body %} {% endblock %}
+
+    <!-- ✅ jQuery (kept as you had it) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+<!-- Replace your broken script tag with this -->
+
+
+
+
+    <!-- ✅ Bootstrap 5 JS Bundle (includes Popper — no separate Popper needed) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"  crossorigin="anonymous"></script>
+
+    <!-- ✅ Bootstrap 5 requires manual popover initialization -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.forEach(function (el) {
+          new bootstrap.Popover(el);
+        });
+      });
+    </script>
+
+    {% block js %} {% endblock %}
+  </body>
+</html>

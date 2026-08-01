@@ -1,0 +1,409 @@
+{% extends 'shop/basic.html' %}
+{% block title %}Checkout - My Awesome Cart{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="col my-4">
+    <h2>Step 1 - My Awesome Cart Express Checkout - Review Your Cart Items</h2>
+    <div>
+      <ul class="list-group" id="items">
+      </ul>
+
+      <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mt-3">
+        <li class="breadcrumb-item active" aria-current="page">
+            Your Cart Total Is <strong>Rs.<span id="total" >0.00</span></strong>
+            Enter your details below &amp; place your order. Thanks for using My Awesome Cart!
+        </li>
+    </ol>
+</nav>
+    </div>
+  </div>
+
+  <div class="col my-4">
+    <h2>Step 2 - Enter Address & Other Details:</h2>
+
+    <form class="row g-3" method="post" action="/payments/">{% csrf_token %}
+      <input type="hidden" name="items_json" id="item_json">  <!-- FIX 1: name="itemJson" changed to name="items_json" to match views.py -->
+    <input type="hidden" name="amount" id="amount" >
+      <div class="col-md-6">
+        <div class="col-md-6">
+          <label for="inputname" class="form-label">Name</label>
+          <input type="text" class="form-control" id="name" placeholder="Name" name="name">
+        </div>
+        <label for="inputEmail4" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email">  <!-- FIX 2: added name="email" was missing -->
+      </div>
+
+      <div class="col-12">
+        <label for="inputAddress" class="form-label">Address</label>
+        <input type="text" class="form-control" id="address1" name="address" placeholder="1234 Main St">  <!-- FIX 3: name="address1" changed to name="address" to match views.py -->
+      </div>
+      <div class="col-12">
+        <label for="inputAddress2" class="form-label">Address line 2</label>
+        <input type="text" class="form-control" id="address2" name="address2" placeholder="Apartment, studio, or floor">  <!-- FIX 4: typo "namme" fixed to name -->
+      </div>
+      <div class="col-md-6">
+        <label for="inputCity" class="form-label">City</label>
+        <input type="text" class="form-control" id="city" name="city">
+      </div>
+      <div class="col-md-4">
+        <label for="inputState" class="form-label">State</label>
+        <input type="text" class="form-control" id="State" name="state" placeholder="Enter your State">
+      </div>
+      <div class="col-md-2">
+        <label for="inputZip" class="form-label">Zip</label>
+        <input type="text" class="form-control" id="zip_code" name="zip_code">
+      </div>
+
+      <div class="form-group">
+        <label for="inputPhone" class="form-label">Phone Number</label>
+        <input type="tel" class="form-control" id="phone" name="phone">
+      </div>
+
+      <div class="col-12">
+        <button type="submit">Pay with Razorpay</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+
+
+   var sum = 0;
+  var totalPrice = 0;
+  var cart = {};
+  if (localStorage.getItem('cart') !== null) {
+    cart = JSON.parse(localStorage.getItem('cart'));
+  }
+
+  console.log(cart);
+
+
+  var sum = 0;
+
+  if ($.isEmptyObject(cart)) {
+    let mystr = "<p>Your cart is empty, please add some items to your cart before checking out.</p>"
+    $('#items').append(mystr);
+  } else {
+    for (let item in cart) {
+      let name = cart[item][1];
+       let qty  = cart[item][0];
+       let itemPrice = parseFloat(cart[item][2]);
+       totalPrice =      totalPrice +  qty * itemPrice;
+      sum += qty;  // FIX 5: was "sum = name + qty" which gives wrong string concat, changed to sum += qty
+      let mystr = `
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          ${name}
+          <span class="badge bg-primary rounded-pill">${qty}</span>
+        </li>`;
+      $("#items").append(mystr);
+    }
+  }
+  document.getElementById('total').innerHTML = totalPrice;
+  document.getElementById('cart').innerHTML = sum;
+$('form').submit(function() {
+    $('#item_json').val(JSON.stringify(cart));
+     $('#amount').val(totalPrice);
+});
+  {% if thank %}
+    $('#item_json').val(JSON.stringify(cart));  // FIX 6: was $('#itemjson') wrong id, fixed to $('#item_json')
+    localStorage.removeItem('cart');  // FIX 7: clear cart after order placed
+    alert('Thank you for ordering with us. Your order id is {{id}}, use it to track your order using our order tracker.');
+    document.location = "/shop/";
+  {% endif %}
+
+document.getElementById('total').innerHTML = totalPrice;
+document.getElementById('cart').innerHTML = sum;
+$('#amount').val(totalPrice);  // ← ADD THIS HERE ✅
+
+
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+================================================================================================================================================
+
+============================================================================================================================================
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pay Now</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 80px 20px; }
+        .card { max-width: 400px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; padding: 30px; }
+        h2 { color: #2d6cdf; }
+        button { padding: 12px 30px; background: #2d6cdf; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 20px; width: 100%; }
+        button:hover { background: #1a4fa0; }
+    </style>
+</head>
+<body>
+
+{% if order %}
+    <div class="card">
+        <h2>💳 Complete Payment</h2>
+        <p>Product: <strong>{{ product }}</strong></p>
+        <p>Amount: <strong>₹{{ amount }}</strong></p>
+        <p>Name: <strong>{{ name }}</strong></p>
+
+        <form action="{% url 'paytm_callback' %}" method="POST" id="razorpay-form">
+            {% csrf_token %}
+            <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+            <input type="hidden" name="razorpay_order_id"   id="razorpay_order_id">
+            <input type="hidden" name="razorpay_signature"  id="razorpay_signature">
+        </form>
+
+        <button id="pay-button">Pay ₹{{ amount }} Now</button>
+    </div>
+
+    <script>
+        var script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = function() {
+            document.getElementById('pay-button').addEventListener('click', function() {
+                var options = {
+                    key         : "{{ razorpay_key }}",
+                    amount      : {{ amount_paise }},
+                    currency    : "INR",
+                    name        : "My Awesome Shop",
+                    description : "{{ product }}",
+                    order_id    : "{{ order.razorpay_order_id }}",
+                    prefill: {
+                        name    : "{{ name }}",
+                        email   : "{{ email }}",
+                        contact : "{{ phone }}"
+                    },
+                    theme: { color: "#2d6cdf" },
+                    handler: function(response) {
+                        document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+                        document.getElementById('razorpay_order_id').value   = response.razorpay_order_id;
+                        document.getElementById('razorpay_signature').value  = response.razorpay_signature;
+                        document.getElementById('razorpay-form').submit();
+                    }
+                };
+                var rzp = new Razorpay(options);
+                rzp.open();
+            });
+
+            // Auto click after 1 second
+            setTimeout(function() {
+                document.getElementById('pay-button').click();
+            }, 1000);
+        };
+        document.head.appendChild(script);
+    </script>
+
+{% else %}
+    <div class="card">
+        <h2>Pay Now</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <p style="color:red">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+        <form method="POST" action="/payments/">
+            {% csrf_token %}
+            <input type="hidden" name="product" value="Order">
+            <p><label>Name</label><br>
+            <input type="text" name="name" required></p>
+            <p><label>Email</label><br>
+            <input type="email" name="email" required></p>
+            <p><label>Phone</label><br>
+            <input type="tel" name="phone" maxlength="10" required></p>
+            <p><label>Amount (₹)</label><br>
+            <input type="number" name="amount" min="1" required></p>
+            <button type="submit">Proceed to Pay</button>
+        </form>
+    </div>
+{% endif %}
+
+</body>
+</html>
+============================================================================================================================
+=====================================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pay Now</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 80px 20px; }
+        .card { max-width: 500px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; padding: 30px; }
+        h2 { color: #2d6cdf; }
+        label { display: block; text-align: left; margin-top: 12px; font-weight: bold; font-size: 14px; }
+        input { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .row { display: flex; gap: 10px; }
+        .row input { flex: 1; }
+        button { padding: 12px 30px; background: #2d6cdf; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 20px; width: 100%; }
+        button:hover { background: #1a4fa0; }
+    </style>
+</head>
+<body>
+
+{% if order %}
+    <div class="card">
+        <h2>💳 Complete Payment</h2>
+        <p>Product: <strong>{{ product }}</strong></p>
+        <p>Amount: <strong>₹{{ amount }}</strong></p>
+        <p>Name: <strong>{{ name }}</strong></p>
+
+        <form action="{% url 'paytm_callback' %}" method="POST" id="razorpay-form">
+            {% csrf_token %}
+            <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+            <input type="hidden" name="razorpay_order_id"   id="razorpay_order_id">
+            <input type="hidden" name="razorpay_signature"  id="razorpay_signature">
+        </form>
+
+        <button id="pay-button">Pay ₹{{ amount }} Now</button>
+    </div>
+
+    <script>
+        var script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = function() {
+            document.getElementById('pay-button').addEventListener('click', function() {
+                var options = {
+                    key         : "{{ razorpay_key }}",
+                    amount      : {{ amount_paise }},
+                    currency    : "INR",
+                    name        : "My Awesome Shop",
+                    description : "{{ product }}",
+                    order_id    : "{{ order.razorpay_order_id }}",
+                    prefill: {
+                        name    : "{{ name }}",
+                        email   : "{{ email }}",
+                        contact : "{{ phone }}"
+                    },
+                    theme: { color: "#2d6cdf" },
+                    handler: function(response) {
+                        document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+                        document.getElementById('razorpay_order_id').value   = response.razorpay_order_id;
+                        document.getElementById('razorpay_signature').value  = response.razorpay_signature;
+                        document.getElementById('razorpay-form').submit();
+                    }
+                };
+                var rzp = new Razorpay(options);
+                rzp.open();
+            });
+
+            setTimeout(function() {
+                document.getElementById('pay-button').click();
+            }, 1000);
+        };
+        document.head.appendChild(script);
+    </script>
+
+{% else %}
+    <div class="card">
+        <h2>💳 Pay Now</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <p style="color:red">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+        <form method="POST" action="/payments/">
+            {% csrf_token %}
+            <input type="hidden" name="product" value="Order">
+
+            <label>Full Name</label>
+            <input type="text" name="name" placeholder="Your full name" required>
+
+            <label>Email</label>
+            <input type="email" name="email" placeholder="your@email.com" required>
+
+            <label>Phone</label>
+            <input type="tel" name="phone" placeholder="10-digit mobile" maxlength="10" required>
+
+            <label>Amount (₹)</label>
+            <input type="number" name="amount" placeholder="e.g. 499" min="1" required>
+
+            <label>Address Line 1</label>
+            <input type="text" name="address" placeholder="House No, Street" required>
+
+            <label>Address Line 2</label>
+            <input type="text" name="address2" placeholder="Apartment, Area (optional)">
+
+            <div class="row">
+                <div style="flex:1">
+                    <label>City</label>
+                    <input type="text" name="city" placeholder="City" required>
+                </div>
+                <div style="flex:1">
+                    <label>State</label>
+                    <input type="text" name="state" placeholder="State" required>
+                </div>
+            </div>
+
+            <label>ZIP Code</label>
+            <input type="text" name="zip_code" placeholder="380001" required>
+
+            <button type="submit">Proceed to Pay</button>
+        </form>
+    </div>
+{% endif %}
+
+</body>
+</html>

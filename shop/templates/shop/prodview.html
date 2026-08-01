@@ -1,0 +1,64 @@
+{% extends 'shop/basic.html' %}
+{% block title %}{{ product.product_name }} - My Awesome Cart{% endblock %}
+
+{% block body %}
+<div class="container my-4">
+    <div class="row">
+
+        <!-- PRODUCT IMAGE -->
+        <div class="col-md-4">
+            <img src="/media/{{ product.image }}" width="233px" height="355px">
+            <div class="mt-3">
+                <button class="btn btn-success">Buy Now</button>
+
+                <!-- ADD TO CART -->
+                <button id="pr{{ product.product_id }}" class="btn btn-primary cart">
+                    Add To Cart
+                </button>
+            </div>
+        </div>
+
+        <!-- PRODUCT DETAILS -->
+        <div class="col-md-8">
+            <h5>{{ product.product_name }}</h5>
+            <p>{{ product.dec }}</p>
+            <p><strong>₹ {{ product.price }}</strong></p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+// Initialize cart
+let cart = {};
+if (localStorage.getItem('cart') !== null) {
+    cart = JSON.parse(localStorage.getItem('cart'));
+}
+updateCartCount();
+
+// Add to cart
+$('.cart').click(function () {
+    let id = this.id; // pr<ID>
+
+    if (cart[id] !== undefined) {
+        cart[id] += 1;
+    } else {
+        cart[id] = 1;
+    }
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+});
+
+// Update cart count in navbar
+function updateCartCount() {
+    let total = 0;
+    for (let item in cart) {
+        total += cart[item];
+    }
+    document.getElementById('cart').innerHTML = total;
+}
+</script>
+{% endblock %}

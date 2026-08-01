@@ -1,0 +1,140 @@
+{% extends 'shop/basic.html' %}
+{% block title %}Checkout - My Awesome Cart{% endblock %}
+
+{% block body %}
+<div class="container">
+
+  <!-- Step 1: Cart Items -->
+  <div class="col my-4">
+    <h2>Step 1 - Review Your Cart Items</h2>
+    <ul class="list-group" id="items"></ul>
+    <div class="card mt-3 p-3" style="max-width:400px;">
+        <div class="d-flex justify-content-between">
+            <span><strong>Total Items:</strong></span>
+            <span id="total-items">0</span>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+            <span><strong>Total Amount:</strong></span>
+            <span class="text-success"><strong>₹<span id="total">0.00</span></strong></span>
+        </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Step 2: Address Form -->
+  <div class="col my-4">
+    <h2>Step 2 - Enter Address & Other Details</h2>
+
+    <form class="row g-3" method="post" action="/shop/checkout/">
+      {% csrf_token %}
+      <input type="hidden" name="items_json" id="item_json">
+      <input type="hidden" name="amount" id="amount">
+
+      <div class="col-md-6">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-control" name="name" placeholder="Your full name" required>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control" name="email" placeholder="your@email.com" required>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Phone Number</label>
+        <input type="tel" class="form-control" name="phone" placeholder="10-digit mobile" maxlength="10" required>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Address Line 1</label>
+        <input type="text" class="form-control" name="address" placeholder="House No, Street" required>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Address Line 2</label>
+        <input type="text" class="form-control" name="address2" placeholder="Apartment, Area (optional)">
+      </div>
+
+      <div class="col-md-5">
+        <label class="form-label">City</label>
+        <input type="text" class="form-control" name="city" required>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">State</label>
+        <input type="text" class="form-control" name="state" placeholder="Gujarat" required>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">ZIP Code</label>
+        <input type="text" class="form-control" name="zip_code" placeholder="380001" required>
+      </div>
+
+      <div class="col-12">
+        <div class="card p-3 bg-light mt-2">
+            <div class="d-flex justify-content-between">
+                <span><strong>Total Amount Payable:</strong></span>
+                <span class="text-success"><strong>₹<span id="total2">0.00</span></strong></span>
+            </div>
+        </div>
+      </div>
+
+      <div class="col-12 mt-2">
+        <button type="submit" class="btn btn-primary btn-lg w-100">
+            Pay with Razorpay ₹<span id="btn-amount">0</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+  var sum = 0;
+  var totalPrice = 0;
+  var cart = {};
+
+  if (localStorage.getItem('cart') !== null) {
+    cart = JSON.parse(localStorage.getItem('cart'));
+  }
+
+  if ($.isEmptyObject(cart)) {
+    $('#items').append("<li class='list-group-item text-danger'>Your cart is empty.</li>");
+  } else {
+    for (let item in cart) {
+      let name      = cart[item][1];
+      let qty       = cart[item][0];
+      let itemPrice = parseFloat(cart[item][2]);
+      let itemTotal = qty * itemPrice;
+      totalPrice    = totalPrice + itemTotal;
+      sum          += qty;
+      let mystr = `
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span><strong>${name}</strong> <small class="text-muted ms-2">x${qty} @ ₹${itemPrice}</small></span>
+          <span class="badge bg-primary rounded-pill">₹${itemTotal}</span>
+        </li>`;
+      $("#items").append(mystr);
+    }
+  }
+
+  document.getElementById('total').innerHTML       = totalPrice;
+  document.getElementById('total2').innerHTML      = totalPrice;
+  document.getElementById('total-items').innerHTML = sum;
+  document.getElementById('btn-amount').innerHTML  = totalPrice;
+
+  $('form').submit(function() {
+    $('#item_json').val(JSON.stringify(cart));
+    $('#amount').val(totalPrice);
+  });
+
+  {% if thank %}
+    localStorage.removeItem('cart');
+    alert('Thank you for ordering! Your order id is {{id}}');
+    document.location = "/shop/";
+  {% endif %}
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting to Paytm...</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 80px 20px; }
+        .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #00B9F5; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h2>Please wait...</h2>
+    <p>You are being redirected to the Paytm payment page.</p>
+    <div class="spinner"></div>
+
+    <!--
+        This form auto-submits to Paytm's gateway URL.
+        All hidden fields contain the payment parameters + checksum.
+        NOTE: No {% csrf_token %} here — this form posts directly to Paytm, not to Django.
+    -->
+    <form id="paytm-form" method="POST" action="{{ gateway_url }}">
+        {% for key, value in paytm_params.items %}
+            <input type="hidden" name="{{ key }}" value="{{ value }}">
+        {% endfor %}
+    </form>
+
+    <script>
+        // Auto-submit the form when the page loads
+        window.onload = function() {
+            document.getElementById('paytm-form').submit();
+        };
+    </script>
+</body>
+</html>
