@@ -158,3 +158,37 @@ def contact(request):
         contact = Contact(name=name, email=email, phone=phone, desc=desc)
         contact.save()
     return render(request, "shop/contact.html")
+
+
+
+
+
+
+
+def compare_product(request, my_product_id):
+    try:
+        product1 = Product.objects.get(product_id=my_product_id)
+
+        # get all other products in the same category (for dropdown options)
+        same_category_products = Product.objects.filter(
+            category=product1.category
+        ).exclude(product_id=my_product_id)
+
+        # check if user picked a specific product2 via dropdown (GET param)
+        compare_id = request.GET.get('compare_id')
+
+        if compare_id:
+            product2 = Product.objects.filter(product_id=compare_id).first()
+        else:
+            product2 = same_category_products.first()
+
+        return render(request, 'shop/compare_product.html', {
+            'product1': product1,
+            'product2': product2,
+            'same_category_products': same_category_products,
+        })
+
+    except Product.DoesNotExist:
+        return render(request, 'shop/compare_product.html', {
+            'error': 'Product not found'
+        })

@@ -1,0 +1,66 @@
+{% extends 'shop/basic.html' %}
+
+{% block body %}
+<div class="container mt-4">
+
+    <h2 class="text-center mb-4">Product Comparison</h2>
+
+    {% if error %}
+        <p class="text-danger text-center">{{ error }}</p>
+    {% else %}
+
+    <!-- Dropdown to change product2 -->
+    <div class="text-center mb-4">
+        <form method="get" action="">
+            <label>Compare with:</label>
+            <select name="compare_id" onchange="this.form.submit()" class="form-select d-inline-block" style="width:250px;">
+                {% for p in same_category_products %}
+                    <option value="{{ p.product_id }}" {% if product2 and p.product_id == product2.product_id %}selected{% endif %}>
+                        {{ p.product_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <div class="row">
+
+        <!-- Product 1 -->
+        <div class="col-md-6">
+            <div class="card">
+                <img src="/media/{{ product1.image }}" class="card-img-top" style="max-height:250px; object-fit:contain;">
+                <div class="card-body">
+                    <h4>{{ product1.product_name }}</h4>
+                    <p>{{ product1.dec }}</p>
+                    <h5>Price: ₹{{ product1.price }}</h5>
+                    <p>Category: {{ product1.category }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product 2 -->
+        <div class="col-md-6">
+            {% if product2 %}
+            <div class="card">
+                <img src="/media/{{ product2.image }}" class="card-img-top" style="max-height:250px; object-fit:contain;">
+                <div class="card-body">
+                    <h4>{{ product2.product_name }}</h4>
+                    <p>{{ product2.dec }}</p>
+                    <h5>Price: ₹{{ product2.price }}</h5>
+                    <p>Category: {{ product2.category }}</p>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-muted">No other product available to compare in this category.</p>
+            {% endif %}
+        </div>
+
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <a href="/shop/index"><button class="btn btn-primary">Back to Shop</button></a>
+    </div>
+
+</div>
+{% endblock %}
